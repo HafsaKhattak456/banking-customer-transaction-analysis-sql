@@ -40,10 +40,6 @@ sql/05_business_analysis.sql
 results/data_quality_report.md
 results/business_insights.md
 results/monthly_transaction_summary.csv
-visuals/monthly_transaction_trend.png
-visuals/investment_category_totals.png
-visuals/regional_average_profit.png
-visuals/banking_analytics_dashboard.html
 ```
 
 ## Reproduce the analysis
