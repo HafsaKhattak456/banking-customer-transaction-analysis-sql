@@ -4,7 +4,7 @@ A reproducible SQL portfolio case study using a **synthetic banking dataset** co
 
 **Tools:** PostgreSQL 18, pgAdmin 4, SQL (joins, CTEs, aggregations and conditional aggregation).
 
-**Status:** Core SQL analysis complete. A Power BI dashboard is a planned extension and **is not included** in this repository.
+**Status:** PostgreSQL data-quality assessment, data preparation, SQL business analysis, and Power BI dashboard development completed.
 
 ## Objectives
 
@@ -35,6 +35,10 @@ banking-customer-transaction-analysis-sql/
 ├── README.md
 ├── data/
 │   └── dataset_source.md
+├──powerbi/
+│  ├──Banking_Customer_Transaction_Dashboard.pbix
+│  └──banking_dashboard_preview.png
+│
 ├── sql/
 │   ├── 01_create_tables.sql
 │   ├── 02_data_quality_checks.sql
@@ -74,8 +78,7 @@ banking-customer-transaction-analysis-sql/
 - [x] Data-quality and financial-discrepancy checks
 - [x] Analysis-ready customer, transaction, and branch tables
 - [x] Six SQL business analyses and supporting reports
-- [ ] Power BI dashboard and visuals created and validated separately
-- [ ] Optional extensions: customer cohort analysis, source-defined KPI reconciliation, and more robust time comparisons
+- [x] Power BI dashboard and visuals created and validated separately
 
 ## Power BI Dashboard
 
@@ -93,5 +96,9 @@ An interactive Power BI dashboard was developed using analysis-ready PostgreSQL 
 ### Dashboard Preview
 
 ![Banking Analytics Dashboard](powerbi/banking_dashboard_preview.png)
+
+### Download the Power BI Report
+
+[Power BI Dashboard (.pbix)](powerbi/Banking_Customer_Transaction_Dashboard.pbix)
 
 **Notes:** The dashboard uses synthetic banking data. Financial currency units are unspecified, and reported profit margins remain unreconciled. The PBIX includes an imported data snapshot; refreshing requires access to a compatible PostgreSQL database.

@@ -136,7 +136,7 @@ Data-quality assessment, data preparation, and the core SQL business analyses ar
 
 The financial metric inconsistencies remain documented and unresolved.
 
-The next planned stage is Power BI dashboard development.
+The core SQL business analysis and Power BI dashboard development are complete. The reported profit-margin discrepancies remain unresolved and are documented as analytical limitations.
 
 ## SQL Evidence
 

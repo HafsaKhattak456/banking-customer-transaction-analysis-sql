@@ -1,6 +1,6 @@
 # Banking Customer & Transaction Analytics — Business Insights
 
-**Project phase:** Core SQL analysis complete; dashboard not yet published  
+**Project phase:** SQL analytics and Power BI dashboard completed. 
 **Tools:** PostgreSQL 18 and pgAdmin 4  
 **Dataset:** Synthetic banking data: 10,000 customers, 10,000 transaction records, and 1,000 branch records  
 **Source:** [Banking and Customer Transaction Data (Kaggle)](https://www.kaggle.com/datasets/yogeshtekawade/banking-and-customer-transaction-data)  
@@ -358,7 +358,7 @@ The widespread disagreement between reported and calculated profit margins demon
 
 6. Consider partial-month coverage when analyzing transaction trends.
 
-7. Develop a Power BI dashboard to communicate the verified findings clearly.
+7. Maintain and extend the completed Power BI dashboard to communicate the analytical findings clearly.
 
 ---
 
@@ -378,17 +378,19 @@ The widespread disagreement between reported and calculated profit margins demon
 
 ## 11. Future Work
 
-The next planned project stage is to develop a Power BI dashboard using the completed PostgreSQL analysis.
+The core PostgreSQL business analysis and Power BI dashboard have been completed.
 
-The dashboard will aim to present:
+Potential future enhancements include:
 
-- Customer and transaction KPIs
-- Monthly transaction activity
-- Customer segmentation
-- Investment category comparisons
-- Regional calculated financial performance
+- Adding more advanced DAX measures and banking KPIs.
+- Expanding customer segmentation and transaction analysis.
+- Introducing additional interactive dashboard filters.
+- Improving financial metric reconciliation when reliable source definitions become available.
+- Exploring transaction forecasting using appropriate time-series methods.
 
-The dashboard is not yet published in the repository.
+The completed Power BI dashboard is available in the [`powerbi/`](../powerbi/) directory.
+
+The PBIX contains an imported data snapshot. Refreshing the report requires access to a compatible PostgreSQL database.
 
 ---
 
@@ -407,4 +409,4 @@ This banking analytics project demonstrates how PostgreSQL can be used to valida
 
 The project highlights the importance of data quality, appropriate analytical definitions, and careful interpretation of results before drawing business conclusions.
 
-The completed SQL analysis provides a foundation for future Power BI visualization and portfolio development.
+The completed SQL analysis and interactive Power BI dashboard demonstrate an end-to-end workflow, from data validation and preparation to business reporting and visualization.
