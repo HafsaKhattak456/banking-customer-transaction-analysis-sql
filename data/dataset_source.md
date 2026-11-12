@@ -104,7 +104,8 @@ The project SQL scripts are organized as follows:
 
 - `sql/04_create_analytics_tables.sql` — Creates the prepared customer, transaction and branch tables without modifying public staging tables.
 - `sql/05_business_analysis.sql` — Six core business analyses plus a customer coverage check.
-- `results/business_insights.md` and `visuals/` — Verified descriptive findings and offline charts.
+- `results/business_insights.md` — Verified descriptive banking analytics findings.
+- `results/monthly_transaction_summary.csv` — Monthly transaction aggregation results.
 
 To reproduce the project:
 
@@ -114,7 +115,7 @@ To reproduce the project:
 4. Import the CSV files into their corresponding staging tables using pgAdmin.
 5. Execute `sql/02_data_quality_checks.sql` and `sql/03_remaining_data_quality_checks.sql`.
 6. Execute `sql/04_create_analytics_tables.sql` and verify the prepared tables.
-7. Execute `sql/05_business_analysis.sql`; compare with `results/business_insights.md` and the visualizations.
+7. Execute `sql/05_business_analysis.sql` and compare the results with `results/business_insights.md` and `results/monthly_transaction_summary.csv`.
 
 ## 7. Data Limitations
 

@@ -1,9 +1,9 @@
 # Banking Customer & Transaction Analytics — Data Quality Report
 
-**Status:** Planned initial data-quality checks complete; financial metric definition unresolved.  
+**Status:** Data-quality assessment completed.  
 **Database:** PostgreSQL 18 (pgAdmin 4)  
-**Source:** Synthetic banking dataset; see [`../data/dataset_source.md`](../data/dataset_source.md).  
-**Evidence:** Results shared from PostgreSQL by the project author. This report does not assert independent execution of the SQL against the author's database.
+**Source:** Synthetic banking dataset; see [dataset_source.md](../data/dataset_source.md).  
+**Evidence:** Results obtained by executing SQL queries in PostgreSQL.
 
 ## Dataset
 
@@ -94,17 +94,56 @@ The location comparison returned **10,000 joined customer–branch rows**. On th
 
 These are location differences, **not evidence of invalid customer records**. Customers can live in a different city or region from their bank branch. Furthermore, the comparison query did not count NULL customer cities as mismatches; its 10,000 denominator represents joined rows, not necessarily all rows eligible for a city comparison. Separate denominators are needed for precise mismatch rates among non-NULL pairs.
 
-## 6. Decisions and next phase
+## 6. Data Preparation Decisions and Outcomes
 
-1. Preserve the three original imported staging tables.
-2. Retain customer records with incomplete demographic fields; use analysis-specific handling and document NULLs.
-3. Keep recorded and recalculated financial margins in separate fields and label provisional formulas clearly.
-4. Do not repair customer/branch location differences without a validated business rule.
-5. Build analysis-ready tables/views and independently verify row counts and joins before business analysis.
-6. Use the next phase for customer segmentation, transaction patterns, investments, and branch reporting, without presenting unresolved financial metrics as verified facts.
+Following the data-quality assessment, three analysis-ready PostgreSQL tables were created in the `analytics` schema.
 
-## SQL evidence
+| Table | Records | Purpose |
+|---|---:|---|
+| `analytics.customers_clean` | 10,000 | Customer profiles with explicit handling of missing demographic attributes |
+| `analytics.transactions_clean` | 10,000 | Transaction records with derived year and month features |
+| `analytics.branches_clean` | 1,000 | Branch financial records with calculated profit metrics and discrepancy flags |
 
-- [`../sql/01_create_tables.sql`](../sql/01_create_tables.sql): staging schemas.
-- [`../sql/02_data_quality_checks.sql`](../sql/02_data_quality_checks.sql): Checks 1–14.
-- [`../sql/03_remaining_data_quality_checks.sql`](../sql/03_remaining_data_quality_checks.sql): Checks 15–22 and optional spot check.
+### Cleaning and Preparation Decisions
+
+1. Preserved the original `public` staging tables without modifying source records.
+2. Retained missing customer ages as NULL.
+3. Replaced missing customer cities and customer types with an explicit `Unknown` reporting category in the analysis-ready customer table.
+4. Added `has_missing_profile_data` to identify incomplete customer profiles.
+5. Added transaction year and month fields to support time-based reporting.
+6. Preserved reported profit margins alongside independently calculated margins.
+7. Added `has_margin_discrepancy` to flag differences exceeding one percentage point.
+8. Preserved customer–branch location differences without assuming they were data errors.
+
+### Validation Results
+
+The analysis-ready tables retained all expected records:
+
+- Customers: 10,000
+- Transactions: 10,000
+- Branch records: 1,000
+
+Final cross-table validation confirmed:
+
+- Unmatched transaction-to-customer references: 0
+- Unmatched customer-to-branch references: 0
+
+These results confirm record-count preservation and successful relationship checks. They do not establish that every financial value is accurate.
+
+### Current Project Status
+
+Data-quality assessment, data preparation, and the core SQL business analyses are complete.
+
+The financial metric inconsistencies remain documented and unresolved.
+
+The next planned stage is Power BI dashboard development.
+
+## SQL Evidence
+
+- [01_create_tables.sql](../sql/01_create_tables.sql) — Staging table creation.
+- [02_data_quality_checks.sql](../sql/02_data_quality_checks.sql) — Data Quality Checks 1–14.
+- [03_remaining_data_quality_checks.sql](../sql/03_remaining_data_quality_checks.sql) — Additional validation checks.
+- [04_create_analytics_tables.sql](../sql/04_create_analytics_tables.sql) — Analysis-ready table creation and verification.
+- [05_business_analysis.sql](../sql/05_business_analysis.sql) — Customer, transaction, investment, and regional analysis.
+
+For analytical findings, see [Business Insights](business_insights.md).
