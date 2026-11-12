@@ -76,3 +76,22 @@ banking-customer-transaction-analysis-sql/
 - [x] Six SQL business analyses and supporting reports
 - [ ] Power BI dashboard and visuals created and validated separately
 - [ ] Optional extensions: customer cohort analysis, source-defined KPI reconciliation, and more robust time comparisons
+
+## Power BI Dashboard
+
+An interactive Power BI dashboard was developed using analysis-ready PostgreSQL tables.
+
+### Dashboard Features
+
+- **KPI Cards:** Total Customers, Transacting Customers, Total Transactions, and Total Branches.
+- **Monthly Transaction Trends:** Transaction activity over the observed period (March 2022–March 2025).
+- **Customer Segmentation:** Transaction activity across customer types.
+- **Investment Analysis:** Comparison of recorded investment amounts by investment category.
+- **Regional Financial Performance:** Average calculated profit per comparable branch.
+- **Interactive Date Filter:** Allows users to filter transaction-related metrics by date.
+
+### Dashboard Preview
+
+![Banking Analytics Dashboard](powerbi/banking_dashboard_preview.png)
+
+**Notes:** The dashboard uses synthetic banking data. Financial currency units are unspecified, and reported profit margins remain unreconciled. The PBIX includes an imported data snapshot; refreshing requires access to a compatible PostgreSQL database.
