@@ -75,9 +75,9 @@ The following columns provide potential relationships for SQL analysis:
 - `customer_data.branch_id` → `bank_data.branch_id`
 - `transaction_data.customer_id` → `customer_data.customer_id`
 
-These relationships will be validated during the data-quality assessment before being used for financial reporting and customer segmentation.
+The initial ID and reference checks found no missing, repeated, or unmatched identifiers. Later analysis will use these relationships while retaining source records.
 
-## 5. Initial Data Quality Findings
+## 5. Data Quality Findings
 
 The initial PostgreSQL assessment identified:
 
@@ -88,7 +88,7 @@ The initial PostgreSQL assessment identified:
 - No customer ages outside the project-defined range of 18–100.
 - No zero, negative, or NULL transaction amounts.
 
-These findings reflect completed checks only. Additional validation is ongoing.
+Additional completed checks identified 1,420 customer records missing at least one of the three attributes, 50 branch records with missing revenue, and 942 of 950 eligible records with a reported-vs-calculated profit margin difference exceeding 1 percentage point under a provisional formula. Financial field definitions remain unverified.
 
 For detailed results, refer to `results/data_quality_report.md`.
 
@@ -99,7 +99,8 @@ The original CSV datasets are imported into PostgreSQL staging tables.
 The project SQL scripts are organized as follows:
 
 - `sql/01_create_tables.sql` — Creates the initial database tables.
-- `sql/02_data_quality_checks.sql` — Performs the initial data-quality assessment.
+- `sql/02_data_quality_checks.sql` — Checks 1–14.
+- `sql/03_remaining_data_quality_checks.sql` — Checks 15–22 and a targeted financial spot check.
 
 Future scripts will document data cleaning, customer segmentation, transaction analysis, and financial reporting.
 
@@ -109,7 +110,7 @@ To reproduce the project:
 2. Create a PostgreSQL database named `banking_analytics`.
 3. Execute `sql/01_create_tables.sql`.
 4. Import the CSV files into their corresponding staging tables using pgAdmin.
-5. Execute `sql/02_data_quality_checks.sql`.
+5. Execute `sql/02_data_quality_checks.sql` and `sql/03_remaining_data_quality_checks.sql`.
 6. Compare the query outputs with the documented findings.
 
 ## 7. Data Limitations
@@ -117,7 +118,7 @@ To reproduce the project:
 - The dataset is synthetic and may not represent actual banking operations.
 - The meaning, currency, and units of some financial fields require confirmation from the source documentation.
 - Missing customer values may affect demographic and geographic analysis.
-- Table relationships and financial metrics require additional validation.
+- Identifier and reference integrity passed the initial checks; source financial metric definitions are still unresolved.
 - Findings should not be interpreted as real financial or operational performance of any bank.
 
 ## 8. Ethical Considerations

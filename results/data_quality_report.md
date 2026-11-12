@@ -1,219 +1,110 @@
-# Banking Customer & Transaction Analytics
-## Data Quality Assessment Report
+# Banking Customer & Transaction Analytics — Data Quality Report
 
-**Database:** PostgreSQL 18  
-**Tool:** pgAdmin 4  
-**Dataset Type:** Synthetic Banking Data  
-**Project Status:** In Progress — Data Quality Assessment
+**Status:** Planned initial data-quality checks complete; financial metric definition unresolved.  
+**Database:** PostgreSQL 18 (pgAdmin 4)  
+**Source:** Synthetic banking dataset; see [`../data/dataset_source.md`](../data/dataset_source.md).  
+**Evidence:** Results shared from PostgreSQL by the project author. This report does not assert independent execution of the SQL against the author's database.
 
----
+## Dataset
 
-## 1. Project Overview
+| Table | Imported records |
+|---|---:|
+| `bank_data` | 1,000 |
+| `customer_data` | 10,000 |
+| `transaction_data` | 10,000 |
 
-This project analyzes a synthetic banking dataset using PostgreSQL to evaluate data quality, identify missing and inconsistent records, and prepare reliable data for banking analytics.
+## 1. Customer completeness
 
-The objective is to demonstrate practical SQL skills while applying data validation techniques commonly used in financial data analysis.
+| Measure | Result |
+|---|---:|
+| Missing age | 500 (5.0%) |
+| Missing city | 500 (5.0%) |
+| Missing customer type | 500 (5.0%) |
+| Records missing at least one of these three fields | 1,420 (14.2%) |
+| Records missing all three | 1 |
+| Records complete on all three | 8,580 (85.8%) |
 
-The assessment covers customer information, financial transactions, and banking branch records.
+The 1,500 missing cells are spread across 1,420 customer records: 1,341 records have exactly one missing field, 78 have exactly two, and one has all three. Discarding every incomplete record would exclude 14.2% of customers from analyses requiring all three attributes. For analyses needing only one attribute, retain other usable records.
 
-## 2. Dataset Overview
+## 2. IDs, dates, and relationships
 
-The dataset consists of three CSV files imported into PostgreSQL.
+- No repeated customer IDs or transaction IDs were detected in the individual checks.
+- The later identifier audit found **zero missing IDs and zero extra repeated non-NULL IDs** for branch, customer, and transaction identifiers.
+- **Zero** customer records had missing or unmatched branch IDs; **zero** transaction records had missing or unmatched customer IDs.
+- Transaction date validation returned **zero** NULL or future-dated records as of the execution date.
+- Customer ages outside the project-defined range 18–100: **zero** non-NULL records.
+- Transaction amounts that are NULL, zero, or negative: **zero** records.
 
-| Table | Number of Records | Columns |
+These checks do not prove that every record represents a unique person or economic event, nor that historical dates and amounts are intrinsically correct.
+
+## 3. Financial-field completeness and reconciliation
+
+| Metric | Result |
+|---|---:|
+| Branch records | 1,000 |
+| Missing `firm_revenue` | 50 (5%) |
+| Missing `expenses` | 0 |
+| Missing `profit_margin` | 0 |
+| Eligible rows for margin comparison | 950 |
+| Margin discrepancy above 1 percentage point | 942 (99.16% of eligible) |
+| Rows within 1 percentage point | 8 |
+| Mean absolute discrepancy | 72.75 percentage points |
+| Maximum absolute discrepancy | 759.64 percentage points |
+| Calculated loss alongside positive reported margin | 142 |
+
+**Assumption to verify:** Recalculated profit margin = `(firm_revenue - expenses) / firm_revenue * 100`, treating the supplied `profit_margin` as percentage points. The dataset's financial definitions and units have **not** been established. A flagged difference is **not** a confirmed accounting error. Do not overwrite the original margin column without source reconciliation.
+
+### Distribution of recorded vs recalculated margins
+
+| Statistic | Recorded margin | Recalculated margin |
 |---|---:|---:|
-| `bank_data` | 1,000 | 6 |
-| `customer_data` | 10,000 | 7 |
-| `transaction_data` | 10,000 | 8 |
-| **Total** | **21,000** | **21** |
+| Minimum | −49.50 | −789.14 |
+| Maximum | 99.97 | 97.62 |
+| Mean | 25.26 | 12.08 |
 
-### Database Relationships
+Ranges and means do not establish row-level agreement. The high flag rate warrants verification of the intended metric, its scale, and the revenue/expense period.
 
-- `bank_data.branch_id` links to `customer_data.branch_id`.
-- `customer_data.customer_id` links to `transaction_data.customer_id`.
+### Simplified branch profitability (revenue minus expenses)
 
-These relationships will support customer-level, branch-level, and transaction-level analysis.
+Of 950 branch records with revenue and expenses present, **721** have revenue greater than expenses (75.89%), **229** have expenses greater than revenue (24.11%), and **0** are break-even. This is an arithmetic classification, **not** a verified statement of real-world operating profitability. Fifty records with missing revenue were excluded.
 
-## 3. Data Quality Assessment
+## 4. Transaction attribute completeness and ranges
 
-### 3.1 Missing Value Analysis
+A transaction attribute check returned **zero missing** values in the visible output for account type, total balance, transaction amount, investment amount, and investment type. The screenshot's date-completeness column was cut off, but a separate date-validation query found zero NULL dates.
 
-The initial assessment identified missing customer information.
+| Observed value | Result |
+|---|---|
+| Earliest transaction date | 2022-03-21 |
+| Latest transaction date | 2025-03-20 |
+| Smallest transaction amount | 51.6139516774 |
+| Largest transaction amount | 7046.2964407668 |
+| Minimum total balance | 1003.00 |
+| Maximum total balance | 99993.00 |
 
-| Column | Missing Values | Missing Percentage |
-|---|---:|---:|
-| Age | 500 | 5.00% |
-| Customer Type | 500 | 5.00% |
-| City | 500 | 5.00% |
+Currency units are not confirmed. The ranges alone do not establish abnormality. Some fields from the full Check 20 output were not visible, so unobserved negative-balance/investment counts are not asserted here.
 
-**Observation:**
+## 5. Text values and geography
 
-Each of these customer attributes contains 500 missing values out of 10,000 customer records.
+Visible text-field audit results show **zero blank (non-NULL)** customer cities and customer types, and **zero missing/blank** customer regions, branch cities, or branch regions. Earlier results identified **500 SQL NULL customer city values**; this does not conflict with zero *blank strings*.
 
-The missing information may affect customer segmentation, demographic analysis, and geographical reporting.
+The location comparison returned **10,000 joined customer–branch rows**. On those rows:
 
-**Business Impact:**
+- **7,932** customer/branch city differences were flagged.
+- **7,502** customer/branch region differences were flagged.
 
-Incomplete customer attributes may result in inaccurate or incomplete segment-level insights, particularly when calculating customer distributions by age, location, or customer category.
+These are location differences, **not evidence of invalid customer records**. Customers can live in a different city or region from their bank branch. Furthermore, the comparison query did not count NULL customer cities as mismatches; its 10,000 denominator represents joined rows, not necessarily all rows eligible for a city comparison. Separate denominators are needed for precise mismatch rates among non-NULL pairs.
 
-**Next Action:**
+## 6. Decisions and next phase
 
-Investigate whether missing values occur in the same customer records or across different customers before deciding on an appropriate treatment.
+1. Preserve the three original imported staging tables.
+2. Retain customer records with incomplete demographic fields; use analysis-specific handling and document NULLs.
+3. Keep recorded and recalculated financial margins in separate fields and label provisional formulas clearly.
+4. Do not repair customer/branch location differences without a validated business rule.
+5. Build analysis-ready tables/views and independently verify row counts and joins before business analysis.
+6. Use the next phase for customer segmentation, transaction patterns, investments, and branch reporting, without presenting unresolved financial metrics as verified facts.
 
-### 3.2 Duplicate Customer ID Validation
+## SQL evidence
 
-A duplicate check was performed using `GROUP BY` and `HAVING`.
-
-**Result:** 0 duplicate customer IDs detected.
-
-**Observation:**
-
-Every customer ID appears only once in the imported `customer_data` table.
-
-**Business Impact:**
-
-Unique customer identifiers support reliable customer-level joins and reduce the risk of duplicate customer records inflating aggregated transaction calculations.
-
-**Limitation:**
-
-This check does not identify potentially duplicated customer profiles assigned different customer IDs.
-
-### 3.3 Customer Age Validation
-
-Customer ages were checked against the following project-defined range:
-
-- Minimum age: 18 years
-- Maximum age: 100 years
-
-**Result:** 0 ages outside the selected range.
-
-**Observation:**
-
-All non-NULL ages satisfied the defined validation criteria.
-
-**Business Impact:**
-
-This supports using the available age records for preliminary segmentation, subject to further verification of the source data.
-
-**Limitation:**
-
-The chosen age boundaries are analytical assumptions, not official banking eligibility criteria. Missing ages were assessed separately.
-
-### 3.4 Transaction Amount Validation
-
-Transaction amounts were checked for:
-
-- Negative values
-- Zero values
-- NULL values
-
-**Result:** 0 records flagged.
-
-**Observation:**
-
-No transaction amounts were found to be zero, negative, or NULL in the imported `transaction_data` table.
-
-**Business Impact:**
-
-The initial transaction amount check did not identify incomplete or nonpositive transaction amounts.
-
-**Limitation:**
-
-This does not establish that all transaction amounts are accurate. Additional checks for unusual transaction values, duplicates, and financial inconsistencies are required.
-
----
-
-## 4. Summary of Findings
-
-| Data Quality Dimension | Finding | Assessment |
-|---|---|---|
-| Customer age completeness | 500 missing values | Requires investigation |
-| Customer type completeness | 500 missing values | Requires investigation |
-| Customer city completeness | 500 missing values | Requires investigation |
-| Customer ID uniqueness | 0 duplicates | Passed |
-| Customer age range | 0 flagged records | Passed |
-| Transaction amount validity | 0 nonpositive or NULL amounts | Passed |
-
-### Key Insight
-
-The primary confirmed data-quality issue identified so far is incomplete customer information.
-
-Although customer identifiers and transaction amounts passed their respective validation checks, additional analysis is necessary before considering the dataset suitable for all financial reporting purposes.
-
-## 5. Recommendations
-
-**1. Investigate missing customer information**
-
-Determine whether missing age, city, and customer type values overlap across records.
-
-**2. Preserve raw data**
-
-Maintain the original staging tables and perform future cleaning operations in separate tables or reproducible SQL transformations.
-
-**3. Validate additional financial attributes**
-
-Check transaction dates, account balances, investment amounts, and transaction identifiers.
-
-**4. Verify table relationships**
-
-Investigate unmatched customer, transaction, and branch identifiers.
-
-**5. Document all cleaning decisions**
-
-Any imputation, correction, or exclusion should include a clear justification and an assessment of its possible impact on analytical results.
-
-## 6. Next Steps
-
-- [x] Import banking datasets into PostgreSQL
-- [x] Identify missing customer attributes
-- [x] Check duplicate customer IDs
-- [x] Validate customer age ranges
-- [x] Validate transaction amounts
-- [ ] Investigate missing-value overlap
-- [ ] Check duplicate transaction IDs
-- [ ] Validate transaction dates
-- [ ] Investigate transaction amount distributions
-- [ ] Verify relational integrity
-- [ ] Prepare cleaned analytical tables
-- [ ] Perform customer and transaction analysis
-- [ ] Develop business insights and visualizations
-
-## 7. Tools and SQL Concepts Applied
-
-**Tools**
-- PostgreSQL 18
-- pgAdmin 4
-- GitHub
-
-**SQL Concepts**
-- `SELECT`
-- `COUNT()`
-- `WHERE`
-- `GROUP BY`
-- `HAVING`
-- `ORDER BY`
-- `IS NULL`
-- `IS NOT NULL`
-- Logical operators (`AND`, `OR`)
-
-## 8. Project Limitations
-
-This project uses synthetic banking data and does not represent actual customer or financial records from a financial institution.
-
-The data-quality results are based on the SQL validation checks completed so far.
-
-Passing an individual validation check does not guarantee that the underlying data is entirely accurate, complete, or consistent.
-
-No customer records have been deleted or modified during the initial assessment.
-
----
-
-## 9. Conclusion
-
-The initial PostgreSQL data-quality assessment identified missing information in three customer attributes, each affecting 5% of records.
-
-No duplicate customer IDs, out-of-range non-NULL ages, or nonpositive or NULL transaction amounts were identified.
-
-The next phase will investigate missing-value patterns, transaction consistency, and relationships between banking tables before performing customer segmentation and financial analysis.
-
-This project demonstrates the use of SQL for systematic data validation and supports the development of reproducible, business-oriented banking analytics workflows.
+- [`../sql/01_create_tables.sql`](../sql/01_create_tables.sql): staging schemas.
+- [`../sql/02_data_quality_checks.sql`](../sql/02_data_quality_checks.sql): Checks 1–14.
+- [`../sql/03_remaining_data_quality_checks.sql`](../sql/03_remaining_data_quality_checks.sql): Checks 15–22 and optional spot check.
